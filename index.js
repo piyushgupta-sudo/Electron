@@ -4,6 +4,8 @@ const path = require("path");
 const ipc = require("electron").ipcRenderer;
 const XLSX = require('xlsx');
 const nodemailer = require("nodemailer");
+// const archiver = require('archiver');
+const AdmZip = require('adm-zip');
 
 fileName = document.getElementById("fileName");
 
@@ -33,11 +35,44 @@ function upload(event) {
     console.log(Data);
     var filePath = 'C:/Users/Admin/Downloads/dir/';
 
+    const zip = new AdmZip();
+
     Data.forEach(iterate)
     // Data = undefined;
     // console.log(Data);
+    // var date = new Date();
+    // date = date.toString().replace(/ /g, "_");
+    // console.log(date);
     function iterate(item) {
-      filePath = filePath + item['CODE1'] + '.pdf';
+      for (var i = 1; i <= 2; i++) {
+        zip.addLocalFile(filePath + item[`CODE${i}`] + '.pdf');
+
+      }
+      const downloadName = `${Date.now()}.zip`;
+      const data1 = zip.toBuffer();
+      zip.writeZip(filePath + downloadName);
+      // const output = fs.createWriteStream(filePath + item['E mail'] + '.zip');
+      // const archive = archiver('zip', {
+      //   zlib: { level: 9 }
+      // });
+      // output.on('close', () => {
+      //   console.log('Archive finished.');
+      // });
+      // archive.on('error', (err) => {
+      //   throw err;
+      // });
+      // archive.pipe(output);
+      // for (let i = 1; i <= 2; i++) {
+      //   try {
+      //     const text = path.join(filePath, item[`CODE${i}`] + '.pdf');
+      //     archive.append(fs.createReadStream(text), { name: item[`CODE${i}`] + '.pdf' });
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
+
+      // }
+      // archive.finalize();
+      // // filePath = filePath + item['CODE1'] + '.pdf';
       var transporter = nodemailer.createTransport({
         // host: "smtp.mailtrap.io",
         // port: 2525,
@@ -47,15 +82,16 @@ function upload(event) {
           pass: "Sad21445@2"
         }
       });
+      // console.log(item['E mail'] + '_' + date + '.zip')
       var mailOptions = {
         from: 'piyush@infocusin.com',
         to: item['E mail'],
-        subject: 'Trail2',
-        html: '<h1>Hello, This is techsolutionstuff !!</h1><p>This is test mail..!</p>',
+        subject: 'Trail4',
+        // html: '<h1>Hello, This is techsolutionstuff !!</h1><p>This is test mail..!</p>',
         attachments: [
           {
-            filename: item['CODE1'] + '.pdf',
-            path: filePath
+            filename: downloadName,
+            path: filePath + downloadName
           }
         ]
       };
@@ -64,6 +100,7 @@ function upload(event) {
           console.log(error);
         } else {
           console.log('Email sent: ' + info.response);
+          location.reload();
         }
       });
 
@@ -79,7 +116,7 @@ function upload(event) {
 
     // Data.shift();
     // console.log(Data);
-    location.reload();
+    // location.reload();
   });
 
   // location.reload();
