@@ -16,29 +16,31 @@ let downloadWindow;
 // A function will execute when the app is ready
 app.on("ready", function () {
   // An empty object is passed in the browser window constructer because at the starting there is no item in the list
-  mainWindow = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
-    },
-  });
-  // Process to Load HTML in Main Window
-  mainWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, "mainWindow.html"),
-      protocol: "file:",
-      slashes: true,
-    })
-  );
-  // Close Entire App when Close button is clicked
-  mainWindow.on("closed", function () {
-    app.quit();
-  });
-  // Build Menu from template
-  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-  // Insert Menu (Navbar). It will overwrite the default menu.
-  Menu.setApplicationMenu(mainMenu);
+  // mainWindow = new BrowserWindow({
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //     contextIsolation: false,
+  //     enableRemoteModule: true,
+  //   },
+  // });
+  // // Process to Load HTML in Main Window
+  // mainWindow.loadURL(
+  //   url.format({
+  //     pathname: path.join(__dirname, "mainWindow.html"),
+  //     protocol: "file:",
+  //     slashes: true,
+  //   })
+  // );
+  // // Close Entire App when Close button is clicked
+  // mainWindow.on("closed", function () {
+  //   app.quit();
+  // });
+  // // Build Menu from template
+  // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+  // // Insert Menu (Navbar). It will overwrite the default menu.
+  // Menu.setApplicationMenu(mainMenu);
+  createFileUpload();
+
 });
 //Handle Create Add Window
 function createAddWindow() {
@@ -128,44 +130,44 @@ ipcMain.on("item:add", function (e, item) {
 });
 // Create Menu Template. An array for the list of items
 const mainMenuTemplate = [
-  {
-    label: "File",
-    // Options inside a particular menu
-    submenu: [
-      {
-        label: "Add Item",
-        click() {
-          createAddWindow();
-        },
-      },
-      {
-        label: "Clear items",
-        click() {
-          mainWindow.webContents.send("item:clear");
-        },
-      },
-      {
-        label: "quit",
-        // Shortcut for the option
-        accelerator: process.platform == "darwin" ? "command+Q" : "ctrl+Q",
-        click() {
-          app.quit();
-        },
-      },
-    ],
-  },
+  // {
+  //   label: "File",
+  //   // Options inside a particular menu
+  //   submenu: [
+  //     {
+  //       label: "Add Item",
+  //       click() {
+  //         createAddWindow();
+  //       },
+  //     },
+  //     {
+  //       label: "Clear items",
+  //       click() {
+  //         mainWindow.webContents.send("item:clear");
+  //       },
+  //     },
+  //     {
+  //       label: "quit",
+  //       // Shortcut for the option
+  //       accelerator: process.platform == "darwin" ? "command+Q" : "ctrl+Q",
+  //       click() {
+  //         app.quit();
+  //       },
+  //     },
+  //   ],
+  // },
   {
     label: "File Upload",
     click() {
       createFileUpload();
     },
   },
-  {
-    label: "Download File",
-    click() {
-      createDownloadFile();
-    },
-  },
+  // {
+  //   label: "Download File",
+  //   click() {
+  //     createDownloadFile();
+  //   },
+  // },
 ];
 // If we are in mac the main menu template will not shown properly it will show only electron as a default menu. For fixing that we have to add first object in the main menu template as a empty object.
 if (process.platform == "darwin") {
@@ -239,4 +241,14 @@ ipcMain.on("open-folder-dialog-for-file", function (event) {
     .catch((err) => {
       console.log(err);
     });
+});
+
+ipcMain.on('open-directory-dialog', (event) => {
+  dialog.showOpenDialog({ properties: ['openDirectory'] }).then(result => {
+    if (!result.canceled) {
+      event.sender.send('selected-directory', result.filePaths[0]);
+    }
+  }).catch(err => {
+    console.log(err);
+  });
 });

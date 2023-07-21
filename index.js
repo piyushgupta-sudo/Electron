@@ -6,6 +6,8 @@ const XLSX = require('xlsx');
 const nodemailer = require("nodemailer");
 // const archiver = require('archiver');
 const AdmZip = require('adm-zip');
+const { electron } = require("process");
+const { dialog, ipcMain, ipcRenderer } = require('electron');
 
 fileName = document.getElementById("fileName");
 
@@ -14,8 +16,13 @@ fileContents2 = document.getElementById("fileContents2");
 btnRead = document.getElementById("btnRead");
 
 let pathName = path.join(__dirname, "Files");
-
+var userId = "";
+var password = "";
+var mailSubject = "";
+var mailBody = "";
+var dirPath = "";
 // Upload Function
+
 function upload(event) {
   let path1 = "";
   let Data = [];
@@ -27,91 +34,105 @@ function upload(event) {
     path1 = path1.toString();
     let index = path1.lastIndexOf("\\");
     let fileName = path1.slice(index + 1);
-    const workbook = XLSX.readFile(path1);
-    const sheet_name_list = workbook.SheetNames;
-    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-    // console.log(data.filter(obj => obj['E mail']));
-    Data = data.filter(obj => obj['E mail']);
-    console.log(Data);
-    var filePath = 'C:/Users/Admin/Downloads/dir/';
+    document.getElementById('excel').innerText = fileName;
+    const element = document.getElementById("sendFiles");
+    element.addEventListener("click", sendFiles);
 
-    const zip = new AdmZip();
+    function sendFiles(event) {
+      userId = document.getElementById('email').value;
+      // ('email').value;
+      console.log("userId", userId);
 
-    Data.forEach(iterate)
-    // Data = undefined;
-    // console.log(Data);
-    // var date = new Date();
-    // date = date.toString().replace(/ /g, "_");
-    // console.log(date);
-    function iterate(item) {
-      for (var i = 1; i <= 2; i++) {
-        zip.addLocalFile(filePath + item[`CODE${i}`] + '.pdf');
+      password = document.getElementById('password').value;
+      console.log("password", password);
+
+      const workbook = XLSX.readFile(path1);
+      const sheet_name_list = workbook.SheetNames;
+      const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+      // console.log(data.filter(obj => obj['E mail']));
+      Data = data.filter(obj => obj['E mail']);
+      console.log(Data);
+      var filePath = dirPath;
+
+      const zip = new AdmZip();
+
+      Data.forEach(iterate);
+
+      // Data = undefined;
+      // console.log(Data);
+      // var date = new Date();
+      // date = date.toString().replace(/ /g, "_");
+      // console.log(date);
+      function iterate(item) {
+        for (var i = 1; i <= 2; i++) {
+          zip.addLocalFile(filePath + item[`CODE${i}`] + '.pdf');
+
+        }
+        const downloadName = `${Date.now()}.zip`;
+        const data1 = zip.toBuffer();
+        zip.writeZip(filePath + downloadName);
+        // const output = fs.createWriteStream(filePath + item['E mail'] + '.zip');
+        // const archive = archiver('zip', {
+        //   zlib: { level: 9 }
+        // });
+        // output.on('close', () => {
+        //   console.log('Archive finished.');
+        // });
+        // archive.on('error', (err) => {
+        //   throw err;
+        // });
+        // archive.pipe(output);
+        // for (let i = 1; i <= 2; i++) {
+        //   try {
+        //     const text = path.join(filePath, item[`CODE${i}`] + '.pdf');
+        //     archive.append(fs.createReadStream(text), { name: item[`CODE${i}`] + '.pdf' });
+        //   } catch (error) {
+        //     console.log(error);
+        //   }
+
+        // }
+        // archive.finalize();
+        // // filePath = filePath + item['CODE1'] + '.pdf';
+        var transporter = nodemailer.createTransport({
+          // host: "smtp.mailtrap.io",
+          // port: 2525,
+          service: "hotmail",
+          auth: {
+            user: userId,
+            pass: password
+          }
+        });
+        // console.log(item['E mail'] + '_' + date + '.zip')
+        var mailOptions = {
+          from: userId,
+          to: item['E mail'],
+          subject: 'Trail4',
+          // html: '<h1>Hello, This is techsolutionstuff !!</h1><p>This is test mail..!</p>',
+          attachments: [
+            {
+              filename: downloadName,
+              path: filePath + downloadName
+            }
+          ]
+        };
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+            location.reload();
+          }
+        });
+
+
+        filePath = dirPath;
+
+        // Data.shift();
+        // console.log(Data);
+
+
 
       }
-      const downloadName = `${Date.now()}.zip`;
-      const data1 = zip.toBuffer();
-      zip.writeZip(filePath + downloadName);
-      // const output = fs.createWriteStream(filePath + item['E mail'] + '.zip');
-      // const archive = archiver('zip', {
-      //   zlib: { level: 9 }
-      // });
-      // output.on('close', () => {
-      //   console.log('Archive finished.');
-      // });
-      // archive.on('error', (err) => {
-      //   throw err;
-      // });
-      // archive.pipe(output);
-      // for (let i = 1; i <= 2; i++) {
-      //   try {
-      //     const text = path.join(filePath, item[`CODE${i}`] + '.pdf');
-      //     archive.append(fs.createReadStream(text), { name: item[`CODE${i}`] + '.pdf' });
-      //   } catch (error) {
-      //     console.log(error);
-      //   }
-
-      // }
-      // archive.finalize();
-      // // filePath = filePath + item['CODE1'] + '.pdf';
-      var transporter = nodemailer.createTransport({
-        // host: "smtp.mailtrap.io",
-        // port: 2525,
-        service: "hotmail",
-        auth: {
-          user: "piyush@infocusin.com",
-          pass: "Sad21445@2"
-        }
-      });
-      // console.log(item['E mail'] + '_' + date + '.zip')
-      var mailOptions = {
-        from: 'piyush@infocusin.com',
-        to: item['E mail'],
-        subject: 'Trail4',
-        // html: '<h1>Hello, This is techsolutionstuff !!</h1><p>This is test mail..!</p>',
-        attachments: [
-          {
-            filename: downloadName,
-            path: filePath + downloadName
-          }
-        ]
-      };
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response);
-          location.reload();
-        }
-      });
-
-
-      filePath = 'C:/Users/Admin/Downloads/dir/';
-
-      // Data.shift();
-      // console.log(Data);
-
-
-
     }
 
     // Data.shift();
@@ -142,4 +163,42 @@ function download(event) {
     });
 
   });
+}
+
+//Credential Save
+function submitForm(event) {
+  userId = document.getElementById('email').value;
+  // ('email').value;
+  console.log("userId", userId);
+
+  password = document.getElementById('password').value;
+  console.log("password", password);
+
+}
+
+//Directory Path
+function onDirectorySelected(event) {
+  // dialog.showOpenDialog({ properties: ['openDirectory'], defaultPath: 'C:/Users/Admin/Downloads/dir/' }).then(result => {
+  //   if (!result.canceled) {
+  //     const directoryPath = result.filePaths[0];
+  //     console.log(`Selected directory: ${directoryPath}`);
+  //   }
+  // }).catch(err => {
+  //   console.log(err);
+  // });
+
+
+
+  ipcRenderer.send('open-directory-dialog');
+
+  ipcRenderer.on('selected-directory', (event, path) => {
+    console.log(`Selected directory: ${path}`);
+    dirPath = `${path}`.toString() + '/';
+
+    console.log(dirPath);
+    document.getElementById('dirPath').innerText = dirPath;
+  });
+  // document.getElementById('dirPath').insertAdjacentText = dirPath;
+
+
 }
