@@ -1,3 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;300;500&display=swap');
+
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: 'Roboto Mono', monospace !important;
+}
+
 h1 {
     color: red;
 }
@@ -35,7 +43,7 @@ h1 {
 
 .btnColor {
     border: 2px solid #48abe0 !important;
-    color: #48abe0 !important;
+    color: #fbfbfb !important;
 }
 
 .inputColor {
@@ -57,4 +65,45 @@ h1 {
     content: "@example.com";
     color: #fbfbfb !important;
     font-weight: bold !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.mainWrapper {
+    margin: 25px;
+    color: blue;
+    position: relative;
+    /* Add this line */
+}
+
+#loadingBox {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+}
+
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Set a transparent background color */
+}
+
+#successMessage {
+    position: absolute;
+    top: 15%;
+    /* Adjust the position to be above the form */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4caf50;
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 10;
 }
